@@ -113,16 +113,8 @@ Use the any of `--help`, `-help`, `-h`, or `--h` flags to see a usage help scree
 
 ## closing
 
-That's about everything! Now I can do something like this in my config
+That's about everything!
 
-```
-22 {
-	[ssh;localhost] -> [localhost;2222] ## assuming I have ssh on there
-	[ssh;127.*] -> [localhost;2222]
-	[ssh;pi.mydomain.com] -> [192.168.0.2;22]
-}
-```
-
-which lets me better connect my devices with just one point of entry. I really hope this isn't already an existing tool, cuz I will be sad then. :]
+This lets me better connect my devices with just one point of entry. I really hope this isn't already an existing tool, cuz I will be sad then. :]
 
 I'm actually very proud of this small piece of software, its kinda nice
