@@ -52,7 +52,16 @@ func ParseConfig(file *os.File) ([]Config, error) {
 				return fmt.Errorf("failed to skip whitespace: %v", err)
 			}
 
-			if !unicode.IsSpace(rune(b)) {
+			if b == '#' {
+				_, err := reader.ReadBytes('\n')
+				if err == io.EOF {
+					skipEOF = true
+					return nil
+				}
+				if err != nil {
+					return fmt.Errorf("failed to skip comment: %v", err)
+				}
+			} else if !unicode.IsSpace(rune(b)) {
 				// Found a non-whitespace character, put it back and exit
 				if err := reader.UnreadByte(); err != nil {
 					return fmt.Errorf("failed to unread byte: %v", err)
@@ -187,12 +196,13 @@ func ParseConfig(file *os.File) ([]Config, error) {
 			}
 
 			inputArgs := strings.Split(inputStr, ";")
-			if len(inputArgs) != 2 {
-				return []Config{}, fmt.Errorf("there must be exactly ONE ';' seperating the protocol and the host (or empty strings).")
+			if len(inputArgs) != 3 {
+				return []Config{}, fmt.Errorf("there must be exactly TWO ';' seperating the protocol, the host, and the port on the host it came from (or empty strings).")
 			}
 
 			route.Input.Protocol = strings.TrimSpace(inputArgs[0])
 			route.Input.Host = strings.TrimSpace(inputArgs[1])
+			route.Input.Port = strings.TrimSpace(inputArgs[2])
 
 			if err := expect("->", reader); err != nil {
 				return []Config{}, err
@@ -269,159 +279,3 @@ func ParseConfig(file *os.File) ([]Config, error) {
 		}
 	}
 }
-
-// func _ParseConfig(file *os.File) ([]Config, error) {
-
-
-// 	readScope := func(opener, closer byte, reader *bufio.Reader) (string, error) {
-// 		var s strings.Builder
-// 		if err := skipWhitespace(reader); err != nil { return "", err }
-
-// 		if b, err := reader.ReadByte(); b != opener {
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 			return "", fmt.Errorf("expected '%c', got '%c'", opener, b)
-// 		}
-
-// 		count := 1
-// 		for b, err := reader.ReadByte(); count > 0; b, err = reader.ReadByte() {
-// 			if err == io.EOF {
-// 				return "", fmt.Errorf("EOF encountered before scope terminated.")
-// 			}
-// 			if err != nil {
-// 				return "", fmt.Errorf("failed to read scope: %v", err)
-// 			}
-
-// 			switch b {
-// 			case opener:
-// 				count++
-// 			case closer:
-// 				count--
-// 			}
-// 			s.WriteByte(b)
-// 		}
-// 		return s.String()[:s.Len() - 1], nil
-// 	}
-
-// 	expect := func(expected string, reader *bufio.Reader) error {
-// 		if err := skipWhitespace(reader); err != nil { return err }
-// 		var got strings.Builder
-// 		for i := range len(expected) {
-// 			b, err := reader.ReadByte()
-// 			if err != nil {
-// 				return fmt.Errorf("expected '%s', errored with %v", expected, err)
-// 			}
-// 			got.WriteByte(b)
-
-// 			if b != expected[i] {
-// 				return fmt.Errorf("expected '%s', got '%s'", expected, got.String())
-// 			}
-// 		}
-// 		return nil
-// 	}
-
-// 	readWord := func(validByte func(byte)bool, reader *bufio.Reader) (string, error) {
-// 		if err := skipWhitespace(reader); err != nil { return "", err }
-
-// 		var s strings.Builder
-// 		for b, err := reader.ReadByte(); validByte(b); b, err = reader.ReadByte() {
-// 			if err == io.EOF {
-// 				return s.String(), nil
-// 			}
-// 			if err != nil {
-// 				return "", fmt.Errorf("failed to read word: %v", err)
-// 			}
-
-// 			s.WriteByte(b)
-// 		}
-// 		return s.String(), nil
-// 	}
-
-// 	readInt := func(reader *bufio.Reader) (int, error) {
-// 		word, err := readWord(func(b byte) bool { return b >= '0' && b <= '9' }, reader)
-// 		if err != nil {
-// 			return -1, fmt.Errorf("expected positive integer: %v", err)
-// 		}
-// 		port, err := strconv.Atoi(word)
-// 		if err != nil {
-// 			return -1, fmt.Errorf("failed to read port: %v", err)
-// 		}
-// 		return port, nil
-// 	}
-
-// 	reader := bufio.NewReader(file)
-// 	configs := []Config{}
-
-// 	for {
-// 		if err := skipWhitespace(reader); err != nil {
-// 			return []Config{}, err
-// 		}
-// 		if _, err := reader.Peek(1); err == io.EOF {
-// 			break
-// 		}
-
-// 		port, err := readInt(reader)
-// 		if err != nil {
-// 			return []Config{}, err
-// 		}
-
-// 		cfg := Config {
-// 			ServerPort: port,
-// 			Routes: Routes{},
-// 		}
-
-// 		scope, err := readScope('{', '}', reader)
-// 		if err != nil {
-// 			return []Config{}, err
-// 		}
-// 		scopeReader := bufio.NewReader(strings.NewReader(scope))
-
-// 		for {
-// 			if err := skipWhitespace(scopeReader); err != nil {
-// 				return []Config{}, err
-// 			}
-// 			if _, err := scopeReader.Peek(1); err == io.EOF {
-// 				break
-// 			}
-
-// 			input, err := readScope('[', ']', scopeReader)
-// 			if err != nil {
-// 				return []Config{}, err
-// 			}
-// 			inputArgs := strings.Split(input, ";")
-// 			if len(inputArgs) != 2 {
-// 				return []Config{}, fmt.Errorf("expected 3 args in the order and format: [<protocol>;<host>]")
-// 			}
-
-// 			if err := expect("->", scopeReader); err != nil {
-// 				return []Config{}, err
-// 			}
-
-// 			output, err := readScope('[', ']', scopeReader)
-// 			if err != nil {
-// 				return []Config{}, err
-// 			}
-// 			outputArgs := strings.Split(output, ";")
-// 			if len(outputArgs) != 2 {
-// 				return []Config{}, fmt.Errorf("expected 2 args in the order and format: [<host>;<port>]")
-// 			}
-
-// 			outputPort, err := strconv.Atoi(outputArgs[1])
-// 			if err != nil {
-// 				return []Config{}, fmt.Errorf("output port invalid: %v", err)
-// 			}
-// 			cfg.Routes[client.InputRoute{
-// 				Protocol: inputArgs[0],
-// 				Host: inputArgs[1],
-// 			}] = OutputRoute{
-// 				Host: outputArgs[0],
-// 				Port: outputPort,
-// 			}
-// 		}
-
-// 		configs = append(configs, cfg)
-// 	}
-
-// 	return configs, nil
-// }

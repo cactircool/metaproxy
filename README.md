@@ -41,10 +41,10 @@ Great question, basically via VERY simple configuration file(s).
 2. Populate it in the following format:
 
 ```
-PORT {
-	[protocol;host] -> rec [forward_host;forward_port] ## Comment
-	[protocol2;host2] -> [forward_host2;forward_port2]
-	[a;b] -> fail
+PORT { # Comment
+	[protocol;host;port] -> rec [forward_host;forward_port] # Comment
+	[protocol2;host2;port2] -> [forward_host2;forward_port2]
+	[a;b;c] -> fail
 	...
 }
 
@@ -67,6 +67,10 @@ PORT {
 
 - The host that metaproxy will look for when matching with this rule. Leaving it unspecified acts as a wild card. Regex syntax is allowed.
 
+## port
+
+- If you also want to select based on what port from the machine that connected used to connect, this also lets you do that. This is also regex, so regex rules apply. Empty will be treated as an automatic match.
+
 ### rec
 
 - Specifies if the server being forwarded to is also a metaproxy server. If so, the header that this server recieved will be forwarded to the forward server before the protocol data is routed. If unspecified, this server will simply forward all data blindly into the forward address.
@@ -86,6 +90,8 @@ PORT {
 ### notes
 
 - Rules are applied top down within a block until one matches the connection header. A header that doesn't match any rule will fail as if the fail keyword was used.
+
+- Comments are not allowed within `[]`. But anywhere else is fine since they are treated as basic whitespace.
 
 ## connecting to a server from a client
 

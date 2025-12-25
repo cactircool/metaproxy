@@ -15,33 +15,43 @@ import (
 )
 
 func findDestination(header client.InputRoute, routes Routes) (OutputRoute, bool, error) {
-	regexStr := func(input string) string {
-		if input == "" { return ".*" }
-		return input
+	cmp := func(regex, application string) (bool, error) {
+		if regex == "" {
+			return true, nil
+		}
+		re, err := regexp.Compile(regex)
+		if err != nil {
+			return false, fmt.Errorf("failed to compile regex '%s': %v", application, err)
+		}
+
+		re.Longest()
+
+		match := re.FindString(application)
+		return match == application, nil
 	}
 
 	for _, route := range routes {
-		re, err := regexp.Compile(regexStr(route.Input.Protocol))
+		found, err := cmp(route.Input.Protocol, header.Protocol)
 		if err != nil {
-			return OutputRoute{}, false, fmt.Errorf("failed to compile regex '%s': %v", route.Input.Protocol, err)
+			return OutputRoute{}, false, err
 		}
-
-		re.Longest()
-
-		match := re.FindString(header.Protocol)
-		if match != header.Protocol {
+		if !found {
 			continue
 		}
 
-		re, err = regexp.Compile(regexStr(route.Input.Host))
+		found, err = cmp(route.Input.Host, header.Host)
 		if err != nil {
-			return OutputRoute{}, false, fmt.Errorf("failed to compile regex '%s': %v", route.Input.Protocol, err)
+			return OutputRoute{}, false, err
+		}
+		if !found {
+			continue
 		}
 
-		re.Longest()
-
-		match = re.FindString(header.Host)
-		if match != header.Host {
+		found, err = cmp(route.Input.Port, header.Port)
+		if err != nil {
+			return OutputRoute{}, false, err
+		}
+		if !found {
 			continue
 		}
 

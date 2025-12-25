@@ -9,9 +9,11 @@ import (
 	"os"
 	"strconv"
 )
+
 type InputRoute struct {
 	Protocol string `json:"protocol"`
 	Host string `json:"host"`
+	Port string `json:"port"`
 }
 
 func Connect(protocol, host string, port int) error {
@@ -24,6 +26,7 @@ func Connect(protocol, host string, port int) error {
 	header := InputRoute{
 		Protocol: protocol,
 		Host:     host,
+		Port: strconv.Itoa(port),
 	}
 
 	headerBytes, err := json.Marshal(header)
