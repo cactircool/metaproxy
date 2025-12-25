@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"regexp"
 	"strconv"
 
 	"github.com/cactircool/metaproxy/client"
+	"github.com/cactircool/metaproxy/util"
 )
 
 func findDestination(header client.InputRoute, routes Routes) (OutputRoute, bool, error) {
@@ -148,16 +148,16 @@ func Start(config Config) error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Printf("Error accepting connection: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Error accepting connection: %v\n", err)
 			continue
 		}
 
 		go func() {
-			fmt.Fprintf(os.Stdout, "%s has entered the chat\n", conn.LocalAddr().String())
+			util.Logf(os.Stdout, "%s has entered the chat\n", conn.LocalAddr().String())
 			if err := Handle(conn, config.ServerPort, config.Routes); err != nil {
-				fmt.Fprintf(os.Stderr, "%s -> %v\n", conn.LocalAddr().String(), err)
+				util.Logf(os.Stderr, "%s -> %v\n", conn.LocalAddr().String(), err)
 			}
-			fmt.Fprintf(os.Stdout, "%s has left the chat\n", conn.LocalAddr().String())
+			util.Logf(os.Stdout, "%s has left the chat\n", conn.LocalAddr().String())
 		}()
 	}
 }

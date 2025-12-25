@@ -8,11 +8,20 @@ import (
 
 	"github.com/cactircool/metaproxy/client"
 	"github.com/cactircool/metaproxy/server"
+	"github.com/cactircool/metaproxy/util"
 )
 
 func main() {
 	flag.BoolFunc(help("help"))
 	flag.BoolFunc(help("h"))
+	flag.BoolFunc("verbose", "print out server logs (not that in depth)", func(string)error {
+		util.SetVerbose(true)
+		return nil
+	})
+	flag.BoolFunc("v", "print out server logs (not that in depth)", func(string)error {
+		util.SetVerbose(true)
+		return nil
+	})
 	flag.Parse()
 
 	option := flag.Arg(0)
@@ -80,13 +89,19 @@ func startServer() {
 		}
 	}
 
-	fmt.Println("All servers up and running...")
+	util.Logln(os.Stdout, "All servers up and running...")
 	select {}
 }
 
 func help(name string) (string, string, func(string)error) {
-	return name, "show this help screen", func(string) error {
-		usage()
+	showHelpScreen := func() {
+		fmt.Fprintln(os.Stdout, "Usage: mp connect PROTOCOL HOST PORT | mp server [CONFIG_FILES...]")
+		fmt.Fprintln(os.Stdout, "-h, -help, --h, --help:\n\tshow this help screen")
+		fmt.Fprintln(os.Stdout, "-v, -verbose, --v, --verbose:\n\tprint out server logs (not that in depth)")
+	}
+
+	return name, "shows this help screen", func(string) error {
+		showHelpScreen()
 		os.Exit(0)
 		return nil
 	}
