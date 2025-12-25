@@ -9,11 +9,9 @@ import (
 	"os"
 	"strconv"
 )
-
-type Header struct {
+type InputRoute struct {
 	Protocol string `json:"protocol"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
+	Host string `json:"host"`
 }
 
 func Connect(protocol, host string, port int) error {
@@ -23,10 +21,9 @@ func Connect(protocol, host string, port int) error {
 	}
 	defer conn.Close()
 
-	header := Header{
+	header := InputRoute{
 		Protocol: protocol,
 		Host:     host,
-		Port:     port,
 	}
 
 	headerBytes, err := json.Marshal(header)
@@ -49,9 +46,6 @@ func Connect(protocol, host string, port int) error {
 		}
 	}()
 
-	_, err = io.Copy(os.Stdout, conn)
-	if err != nil {
-		return fmt.Errorf("io.Copy(os.Stdout, conn) failed: %v", err)
-	}
+	_, _ = io.Copy(os.Stdout, conn) // expected to error
 	return nil
 }

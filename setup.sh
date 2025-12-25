@@ -10,12 +10,12 @@ cat <<EOF > "$SCRIPT_DIR/bin/mpc"
 #!/bin/bash
 
 # add extra protocols here
-case \$1 in
+case \$2 in
 	"ssh")
-		ssh -o ProxyCommand="mp --protocol=ssh --host=%h --port=%p" \${@:2}
+		ssh -o ProxyCommand="mp --protocol=ssh --host=%h --port=\$1 connect" \${@:3}
 		;;
 	*)
-		echo "invalid protocol '\$1'"
+		echo "invalid protocol '\$2'"
 		exit 1
 		;;
 esac

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -53,6 +54,8 @@ func main() {
 		if err := server.ConfigStart(file); err != nil {
 			log.Fatalf("failed to parse config and start server: %v", err)
 		}
+		fmt.Println("metaproxy server successfully started!")
+		select {}
 
 	default:
 		log.Fatal("Usage: mp [connect | server] [OPTIONS]")
