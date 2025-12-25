@@ -3,61 +3,95 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
+	"strconv"
 
 	"github.com/cactircool/metaproxy/client"
 	"github.com/cactircool/metaproxy/server"
 )
 
 func main() {
-	protocol := flag.String("protocol", "", "connection protocol.")
-	host := flag.String("host", "", "connection host.")
-	port := flag.Int("port", -1, "connection port.")
-	config := flag.String("config", "", "server configuration file path.")
+	flag.BoolFunc(help("help"))
+	flag.BoolFunc(help("h"))
 	flag.Parse()
 
 	option := flag.Arg(0)
 	switch option {
 	case "connect":
-		if *protocol == "" {
-			log.Fatal("'connect' option requires --protocol flag populated with the protocol being used.")
-		}
-
-		if *host == "" {
-			log.Fatal("'connect' option requires --host flag populated with the host being connected to.")
-		}
-
-		if *port == -1 {
-			log.Fatal("'connect' option requires --port flag populated with the port on the host being connected to.")
-		}
-
-		if *port < 0 || *port > 65535 {
-			log.Fatalf("invalid port %d.", *port)
-		}
-
-		if err := client.Connect(*protocol, *host, *port); err != nil {
-			log.Fatalf("\033[31mfatal\033[0m: %v", err)
-		}
+		startConnect()
 
 	case "server":
-		if *config == "" {
-			log.Fatal("'server' option requires --config flag populated with a valid file path to a metaproxy configuration file.")
-		}
+		startServer()
 
-		file, err := os.Open(*config)
+	default:
+		usage()
+		os.Exit(1)
+	}
+}
+
+func startConnect() {
+	protocol := flag.Arg(1)
+	if protocol == "" {
+		fmt.Fprintln(os.Stderr, "'connect' option requires the protocol being used directly after 'connect'.")
+	}
+
+	host := flag.Arg(2)
+	if host == "" {
+		fmt.Fprintln(os.Stderr, "'connect' option requires the host being connected to after the protocol.")
+	}
+
+	portStr := flag.Arg(3)
+	if portStr == "" {
+		fmt.Fprintln(os.Stderr, "'connect' option requires the port on the host directly after the host.")
+	}
+
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid port '%s': %v\n", portStr, err)
+	}
+	if port < 0 || port > 65535 {
+		fmt.Fprintf(os.Stderr, "invalid port %d; must be within [0, 65535].\n", port)
+	}
+
+	if err := client.Connect(protocol, host, port); err != nil {
+		fmt.Fprintf(os.Stderr, "fatal: %v\n", err)
+	}
+}
+
+func startServer() {
+	args := flag.Args()
+	if len(args) <= 1 {
+		fmt.Fprintln(os.Stderr, "'server' option requires at least one configuration file after 'server'.")
+	}
+
+	for i, configPath := range args {
+		if i == 0 { continue }
+
+		file, err := os.Open(configPath)
 		if err != nil {
-			log.Fatalf("failed to open config file: %v", err)
+			fmt.Fprintf(os.Stderr, "%s:\n\nfailed to open config file: %v\n", configPath, err)
+			os.Exit(1)
 		}
 		defer file.Close()
 
 		if err := server.ConfigStart(file); err != nil {
-			log.Fatalf("failed to parse config and start server: %v", err)
+			fmt.Fprintf(os.Stderr, "%s:\n\tfailed to parse config and start server: %v\n", configPath, err)
+			os.Exit(1)
 		}
-		fmt.Println("metaproxy server successfully started!")
-		select {}
-
-	default:
-		log.Fatal("Usage: mp [connect | server] [OPTIONS]")
 	}
+
+	fmt.Println("All servers up and running...")
+	select {}
+}
+
+func help(name string) (string, string, func(string)error) {
+	return name, "show this help screen", func(string) error {
+		usage()
+		os.Exit(0)
+		return nil
+	}
+}
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "Usage: mp connect PROTOCOL HOST PORT | mp server [CONFIG_FILES...]")
 }

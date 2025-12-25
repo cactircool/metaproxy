@@ -1,7 +1,6 @@
 import os
 import stat
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -18,7 +17,7 @@ def write_files(proxy_file: str, wrapper_file: str):
 			# add extra protocols here
 			case $1 in
 				"ssh")
-					ssh -o ProxyCommand="mp --protocol=ssh --host=%h --port=%p connect" ${@:2}
+					ssh -o ProxyCommand="mp connect ssh %h %p" ${@:2}
 					;;
 				*)
 					echo "invalid protocol '$1'"
