@@ -16,11 +16,11 @@ type InputRoute struct {
 	Port string `json:"port"`
 }
 
-func Connect(protocol, host string, port, localPort int) error {
+func Connect(protocol, host string, port, localPort int, outputPort bool) error {
 	var conn net.Conn
 	var err error
 
-	if localPort > 0 && localPort < 65535 {
+	if localPort >= 0 && localPort <= 65535 {
 		localAddr := &net.TCPAddr{
 			IP: net.ParseIP("127.0.0.1"),
 			Port: localPort,
@@ -34,15 +34,18 @@ func Connect(protocol, host string, port, localPort int) error {
 			return fmt.Errorf("failed to connect to %s:%d: %v", localAddr.IP.String(), localAddr.Port, err)
 		}
 	} else {
-		if localPort != -1 {
-			fmt.Fprintf(os.Stderr, "invalid port %d, letting OS decide port.\n", localPort)
-		}
 		conn, err = net.Dial("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
 		if err != nil {
 			return fmt.Errorf("failed to connect to %s:%d: %v", host, port, err)
 		}
 	}
 	defer conn.Close()
+
+	if outputPort {
+		if err := binary.Write(os.Stdout, binary.BigEndian, uint32(conn.LocalAddr().(*net.TCPAddr).Port)); err != nil {
+			return fmt.Errorf("failed to write out client port: %v", err)
+		}
+	}
 
 	header := InputRoute{
 		Protocol: protocol,
