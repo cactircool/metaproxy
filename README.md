@@ -24,12 +24,12 @@ Best for protocols where me or people I trust are the clients and I set up the s
 
 ## build from source
 
-There is conveniently a script called `setup.py` in the root directory of this project. Simply run this script with sudo:
-`sudo python3 setup.py` and the client and server scripts will be available to you and added to `/usr/local/bin`. There are no dependencies other than that, so removing the binaries is enough to purge the program from your system.
+There is conveniently a script called `mp-setup.py` in the root directory of this project. Simply run this script with sudo:
+`sudo python3 mp-setup.py` and the client and server scripts will be available to you and added to `/usr/local/bin`. There are no dependencies other than that, so removing the binaries is enough to purge the program from your system.
 
-By the way, this README.md assumes the programs are called `mp` for the raw proxy/server and `mpc` for the proxy wrapper (client use). However, the setup.py lets you name them whatever you want so go nuts.
+By the way, this README.md assumes the programs are called `mp` for the raw proxy/server and `mpc` for the proxy wrapper (client use). However, the mp-setup.py lets you name them whatever you want so go nuts.
 
-`setup.py` will end up being platform independent eventually, but for now works on linux as far as I know. Eventually it will also automatically set up services like through Ubuntu's systemctl so starting persistent servers is easy.
+`mp-setup.py` will end up being platform independent eventually, but for now works on linux as far as I know. Eventually it will also automatically set up services like through Ubuntu's systemctl so starting persistent servers is easy.
 
 ## set up a server
 
@@ -118,3 +118,10 @@ That's about everything!
 This lets me better connect my devices with just one point of entry. I really hope this isn't already an existing tool, cuz I will be sad then. :]
 
 I'm actually very proud of this small piece of software, its kinda nice
+
+## TODO
+
+- Factor out mpc into another repo and use go again.
+- Use cobra for the cli parsing instead of the built in flag library so nested commands are nicer.
+- Remove mp-setup.py I guess.
+- Work on getting package manager support for both packages, or create a seperate init script for each one.

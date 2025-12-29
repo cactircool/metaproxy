@@ -127,12 +127,10 @@ func Handle(c net.Conn, serverPort int, routes Routes) error {
 }
 
 func Start(config Config) error {
-	// TODO: make server ipv4 and ipv6
 	isPortAvailable := func(port int) bool {
-		// Format the address as "tcp4" to bind to the IPv4 loopback interface
 		// "" as the host means binding to all available interfaces
 		address := net.JoinHostPort("", strconv.Itoa(port))
-		listener, err := net.Listen("tcp4", address)
+		listener, err := net.Listen("tcp", address)
 
 		if err != nil {
 			return false
@@ -149,7 +147,7 @@ func Start(config Config) error {
 		return fmt.Errorf("cannot bind to port %d.", config.ServerPort)
 	}
 
-	listener, err := net.Listen("tcp", net.JoinHostPort("localhost", strconv.Itoa(config.ServerPort)))
+	listener, err := net.Listen("tcp", net.JoinHostPort("", strconv.Itoa(config.ServerPort)))
 	if err != nil {
 		return fmt.Errorf("failed to listen on %d: %v", config.ServerPort, err)
 	}
