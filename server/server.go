@@ -147,7 +147,22 @@ func Start(config Config) error {
 		return fmt.Errorf("cannot bind to port %d.", config.ServerPort)
 	}
 
-	listener, err := net.Listen("tcp", net.JoinHostPort("", strconv.Itoa(config.ServerPort)))
+	go func() {
+		if err := startListener("tcp4", config); err != nil {
+			fmt.Fprintf(os.Stderr, "ipv4 listener error on port %d: %v\n", config.ServerPort, err)
+		}
+	}()
+
+	go func() {
+		if err := startListener("tcp6", config); err != nil {
+			fmt.Fprintf(os.Stderr, "ipv6 listener error on port %d: %v\n", config.ServerPort, err)
+		}
+	}()
+	select{}
+}
+
+func startListener(network string, config Config) error {
+	listener, err := net.Listen(network, net.JoinHostPort("", strconv.Itoa(config.ServerPort)))
 	if err != nil {
 		return fmt.Errorf("failed to listen on %d: %v", config.ServerPort, err)
 	}
