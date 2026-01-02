@@ -22,7 +22,6 @@ func Connect(protocol, host string, port, localPort int, outputPort bool) error 
 
 	if localPort >= 0 && localPort <= 65535 {
 		localAddr := &net.TCPAddr{
-			IP: net.ParseIP("127.0.0.1"),
 			Port: localPort,
 		}
 		dialer := net.Dialer{
