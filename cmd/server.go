@@ -33,7 +33,7 @@ Examples:
   metaproxy server --verbose mp.cfg`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
+		startServer(args)
 	},
 }
 

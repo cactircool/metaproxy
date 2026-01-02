@@ -27,12 +27,13 @@ mkdir -p $SCRIPT_DIR/bin
 
 cd $SCRIPT_DIR
 go build -o bin/mp
+cp mpc.py bin/mpc
 
 cat <<EOF
 Binary has been written to $SCRIPT_DIR/bin/mp.
 
 To save to a directory already in the PATH, run the following command:
-	sudo mv $SCRIPT_DIR/bin/mp /usr/local/bin # or any other directory already in the PATH
+	sudo mv $SCRIPT_DIR/bin/* /usr/local/bin # or any other directory already in the PATH
 
 To add the binary to the PATH as is, run:
 	echo 'export PATH=\$PATH:$SCRIPT_DIR/bin' >> ~/.bash_profile # or other configuration script

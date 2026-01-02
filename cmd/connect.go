@@ -48,8 +48,8 @@ func init() {
 	// and all subcommands, e.g.:
 	// connectCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	connectFlags.LocalPort = connectCmd.Flags().IntP("local-port", "lp", 0, "specify the port that 'mp connect' runs on, 0 is wildcard; invalid integer ports are silently ignored (default=0).")
-	connectFlags.OutputPort = connectCmd.Flags().BoolP("output-port", "op", false, "with this flag set, the first 32 bits written to stdout will contain the port the client is hosted on, followed by the header, then standard protocol (default=false).")
+	connectFlags.LocalPort = connectCmd.Flags().IntP("local-port", "p", 0, "specify the port that 'mp connect' runs on, 0 is wildcard; invalid integer ports are silently ignored (default=0).")
+	connectFlags.OutputPort = connectCmd.Flags().BoolP("output-port", "o", false, "with this flag set, the first 32 bits written to stdout will contain the port the client is hosted on, followed by the header, then standard protocol (default=false).")
 }
 
 func startConnect(args []string) {
