@@ -78,7 +78,7 @@ def handle_http_proxy_command(cmd, args):
 	)
 
 	if not mp_process.stdout:
-		raise Exception(f"could not open stdout of mp connect")
+		raise Exception("could not open stdout of mp connect.")
 
 	# Read the output port (assuming it outputs as 4 bytes)
 	bytes_data = mp_process.stdout.read(4)
@@ -141,7 +141,7 @@ def handle_tcp_command(cmd, args, default_port):
 	)
 
 	if not mp_process.stdout:
-		raise Exception(f"could not open stdout of mp connect")
+		raise Exception("could not open stdout of mp connect.")
 
 	# Read the output port
 	bytes_data = mp_process.stdout.read(4)
